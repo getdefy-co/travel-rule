@@ -75,7 +75,7 @@
     "eslint-plugin-testing-library": "7.16.2",
     "eslint-plugin-unused-imports": "4.4.1",
     "jest": "^30.0.5",
-    "jest-environment-jsdom": "^30.0.5",
+    "jest-environment-jsdom": "^30.5.1",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.4"
   }
