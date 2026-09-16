@@ -1,0 +1,94 @@
+# Operating system and editors
+.DS_Store
+.vscode/
+.kiro/
+/backend/.cursor/
+/backend/.cursorrules
+/backend/cursorignore
+
+# Dependencies and package-manager state
+node_modules/
+.pnp
+.pnp.*
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.yarn-integrity
+yarn.lock
+
+# Logs and runtime data
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+pids/
+*.pid
+*.seed
+*.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Test and coverage output
+coverage/
+*.lcov
+.nyc_output/
+lib-cov/
+/frontend/test-results/
+
+# Caches and generated output
+.cache/
+.npm/
+.eslintcache
+.stylelintcache
+.grunt/
+.parcel-cache/
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.next/
+.swc/
+out/
+.nuxt/
+.temp/
+.docusaurus/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.vscode-test/
+dist/
+backend/build/Release/
+frontend/build/
+*.tsbuildinfo
+frontend/next-env.d.ts
+
+# Local environment files
+/.env
+/backend/.env
+/backend/.env.development.local
+/backend/.env.test.local
+/backend/.env.production.local
+/backend/.env.local
+/frontend/.env*
+!/frontend/.env.example
+
+# Local secrets and application data
+*.pem
+/.secrets/
+/backend/uploads/
+/backend/gcp_admin.json
+/backend/src/scripts/04_aml_2_0_data_maker/json/
+/backend/tasks/
+/frontend/tasks/
+
+# Package artifacts
+*.tgz
+.lock-wscript
+jspm_packages/
+web_modules/
+bower_components/
+node-waf/

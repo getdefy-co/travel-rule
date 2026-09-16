@@ -1,0 +1,36 @@
+{
+  "txnId": "withdrawal42",
+  "type": "travelRule",
+  "applicant": {
+    "type": "individual",
+    "externalUserId": "customer42",
+    "firstName": "Originator",
+    "lastName": "Person",
+    "paymentMethod": {
+      "type": "crypto",
+      "accountId": "originator-wallet"
+    }
+  },
+  "counterparty": {
+    "type": "individual",
+    "firstName": "Beneficiary",
+    "lastName": "Person",
+    "paymentMethod": {
+      "type": "crypto",
+      "accountId": "beneficiary-wallet"
+    },
+    "institutionInfo": {
+      "internalId": "sumsub-sandbox-vasp"
+    }
+  },
+  "info": {
+    "direction": "out",
+    "amount": 100,
+    "currencyCode": "USDC",
+    "currencyType": "crypto",
+    "paymentDetails": "Customer requested withdrawal",
+    "cryptoParams": {
+      "cryptoChain": "ETH"
+    }
+  }
+}

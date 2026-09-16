@@ -1,0 +1,244 @@
+{
+  "version": 1,
+  "algorithm": "sha256",
+  "generatedBy": "npm run update:docs-acceptance-lock",
+  "documents": [
+    {
+      "file": "README.md",
+      "block": 1,
+      "reference": "non-ci:private-clone",
+      "sha256": "d13874e3407ef193122219264495015d560da05cd996c173ab9a8ee6d4987efc"
+    },
+    {
+      "file": "README.md",
+      "block": 2,
+      "reference": "ci:docker:stack-start",
+      "sha256": "c4527b2d3f64a62f7c7a2d1ed88d0d20079987c0a8fb63d0d6f39740557d7ef3"
+    },
+    {
+      "file": "README.md",
+      "block": 3,
+      "reference": "ci:docker:stack-lifecycle",
+      "sha256": "6a4c7075e572440e3aa43878627193f04b8ffde773aa175e7936969fd1b23540"
+    },
+    {
+      "file": "README.md",
+      "block": 4,
+      "reference": "ci:docker:cleanup",
+      "sha256": "da9733804fecd124fda8dd500a05a5e2376147eea1c126d10c07188c2dfcf3e4"
+    },
+    {
+      "file": "README.md",
+      "block": 5,
+      "reference": "ci:quality",
+      "sha256": "12e4ca873f311d527d3874fe6747fc50ffde797394bdcb69874785a29c318cde"
+    },
+    {
+      "file": "README.md",
+      "block": 6,
+      "reference": "ci:quality",
+      "sha256": "80af062f0107058d3eb6c9918d627a4afe38d05d4c6f371ede604ced2684e5b8"
+    },
+    {
+      "file": "README.md",
+      "block": 7,
+      "reference": "ci:docker:full",
+      "sha256": "5f4e9bb01b571acd2ab778a1c4e3802d048db190c98884c5b556b35138fbfa74"
+    },
+    {
+      "file": "README.md",
+      "block": 8,
+      "reference": "ci:e2e",
+      "sha256": "ad43ad02f21a4d0dc3af94bf9097da196f147d3b72fef1991b75ee95b6fef806"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 1,
+      "reference": "ci:docker:stack-start",
+      "sha256": "b1a64a4fea05a94c6b8bb7a96471c63e36f1cdcae1c6fdc776b3050a5ebd2357"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 2,
+      "reference": "ci:docker:fixture-export",
+      "sha256": "2457918eafdf13ee5a7e9faccd5b1fae8e17cb07d467625ac845d566f2fcbe7b"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 3,
+      "reference": "ci:docker:readiness",
+      "sha256": "9d285ee16ed9560ede763e44f6356bc17e6acf1245e0fc28292f0c5a865f4f5b"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 4,
+      "reference": "ci:docker:readiness-failure",
+      "sha256": "c98945adeb75028628ed2573bda8b019348e3853c1c5641c220bc93db2fceb15"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 5,
+      "reference": "ci:docker:identity",
+      "sha256": "2433485bfae46e4e9eee974b9074b73c43fdbddaaf63ed93916fa3ad9bc72ac8"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 6,
+      "reference": "ci:docker:public-404",
+      "sha256": "85db61924ed27b867f221a1e885784e39a0c2f085257232c42d49e183dd5ebc3"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 7,
+      "reference": "ci:docker:public-404",
+      "sha256": "4785a65c777dc983abe0dd36b8bfd284892bf63c76c96db3fff4b87e3f99561c"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 8,
+      "reference": "ci:docker:no-cert-401",
+      "sha256": "6a0d62e9d0f55001369c719cf5028511cdf3245350b93ad5f24f60a187be5fff"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 9,
+      "reference": "ci:docker:trusted-mtls-404",
+      "sha256": "9b8e13d915e7b403c028564a59ca5c55e898d3874ddb6394cf6eaa66fbda9c8a"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 10,
+      "reference": "ci:docker:admin-login-jwt",
+      "sha256": "112600ac30c97f90b474db9af6a07ebc5b6b4e546d85b9698b6515dd511159dc"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 11,
+      "reference": "ci:docker:admin-login-jwt",
+      "sha256": "d52f722cb0e7fbfdc9f008bb282375bb57021fdb21ae181ca53768f15a22ce93"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 12,
+      "reference": "ci:docker:internal-api",
+      "sha256": "80a6ebce3675fa68b726a59672b67fc61c4af76b19172cf6826912ec75c025b0"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 13,
+      "reference": "ci:docker:internal-api",
+      "sha256": "c2931bbba6be94bc9fb9483e2379aebcafad198c0d8cd95c418c3e0efe598512"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 14,
+      "reference": "ci:docker:restart-persistence",
+      "sha256": "6bef9abb82fefcdfb4ae7553e0072c35dbb0393f328e6eafbbbe7c35df628016"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 15,
+      "reference": "ci:docker:bootstrap-idempotency",
+      "sha256": "82ad014f47db84d380f83aefa6d055815cb8da04a7b7a81c20bd412a9110b2db"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 16,
+      "reference": "ci:docker:full",
+      "sha256": "5f4e9bb01b571acd2ab778a1c4e3802d048db190c98884c5b556b35138fbfa74"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 17,
+      "reference": "ci:docker:cleanup",
+      "sha256": "c6bbc9ec72592b5b13b8b5dc3c12aa505fe08fd562e7e834643e812f89ac42c9"
+    },
+    {
+      "file": "docs/manual-trp-testing.md",
+      "block": 18,
+      "reference": "ci:docker:cleanup",
+      "sha256": "4b5962624777bb215d337876acd34995efdd0ab9711e7b6fbf93e879fac3c9ea"
+    }
+  ],
+  "dockerOperations": [
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "stack-start",
+      "sha256": "d5df4153ff1e0e2b5794d1fc3127cdccbef71a9dcf6e883314debc4e5fe5b69e"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "stack-lifecycle",
+      "sha256": "c1a542720ec50e03a2b7f1fc6936406e2a1e6ed4685990744e9de1b2df1b33a2"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "fixture-export",
+      "sha256": "96a8e2f340a7822d04cdb0a3065ebdf7097eec03202981f9c0f19fabd1a379ce"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "readiness",
+      "sha256": "1a1293f25a799a098b9bc4f7a6a52f2ea05fec9ec16d8864b92239e686a15b82"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "readiness-failure",
+      "sha256": "bc43b8b489f505ca4bf526680f0b1e3b036d6f4ee270f7cfdcfe184a07603934"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "admin-login-jwt",
+      "sha256": "17f0ecf3af799ded32c23f294beb5802a41855b1ff533c69dd40c68fd1cd9578"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "identity",
+      "sha256": "d6c5ddc9ec2bd7eaa151600f3c7c17833c72aa941072667824dd7acb4a31e983"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "public-404",
+      "sha256": "852a29b0577b41660fa2590ddf2a71db2c238df6765a8e998945efd8b6e0b313"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "no-cert-401",
+      "sha256": "ad3c7aef1dd70610b3c04242a2818b33fd905ca729f55a35afa07164572c56c5"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "trusted-mtls-404",
+      "sha256": "cfdbb9b7b1e5511ea597232bd36286c7695a9dcbcef35b2a6ca1a531609851f8"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "bootstrap-idempotency",
+      "sha256": "3a32d6d5d82ae6bca906ac298e1f8a53a3818a5983a156977a503a2801e37d7e"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "internal-api",
+      "sha256": "eb530b826d81012d1554fa65e137add1412b7ccb8b51b689d29f666061077ab7"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "restart-persistence",
+      "sha256": "d8dbc262285628420a2fe3f5d74d1767a1f8796ddbcc97b419de698b89d81d53"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "cleanup",
+      "sha256": "25503f1e5559e9dffda7fb395a1258e5d92adc732c13e22d992ae56f842d707e"
+    },
+    {
+      "file": "scripts/docker-smoke.sh",
+      "operation": "full",
+      "sha256": "d3f4361998eb173e384ab657798fe2dc287772bfabf43994df1c24eacb1df036"
+    }
+  ],
+  "dockerSmokeFile": {
+    "file": "scripts/docker-smoke.sh",
+    "sha256": "1bd3c707586c8a09a5b9f4eadf471eba01698e16d90d1a252e11e673b8deceb4"
+  }
+}

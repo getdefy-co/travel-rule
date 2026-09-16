@@ -1,0 +1,35 @@
+name: Feature request
+description: Propose a scoped change to the supported architecture.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What operator/user problem needs to be solved?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Include API, persistence, fresh-install schema, security, Docker, and documentation impact.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Architecture boundaries
+      options:
+        - label: I considered the `admin|user`, TRP 3.2.1, IVMS101, and 3000/3001/3002/5432 contracts.
+          required: true
+        - label: I did not include secrets, personal data, or vulnerability details.
+          required: true

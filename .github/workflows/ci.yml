@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality, build, audit, and SBOM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Use Node.js 24
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+            frontend/package-lock.json
+          package-manager-cache: true
+      - name: Require npm 11
+        run: npm install --global npm@11.6.1
+      - name: Install dependency graphs
+        run: |
+          npm ci
+          npm ci --prefix backend
+          npm ci --prefix frontend
+      - name: Verify repository
+        run: npm run verify
+      - name: Build frontend production output
+        run: npm --prefix frontend run build
+      - name: Verify Docker configuration scripts
+        run: npm run verify:docker:static
+      - name: Check production dependency trees
+        run: |
+          npm ls --omit=dev
+          npm --prefix backend ls --omit=dev
+          npm --prefix frontend ls --omit=dev
+      - name: Audit complete dependency graphs
+        run: |
+          npm audit --audit-level=low
+          npm --prefix backend audit --audit-level=low
+          npm --prefix frontend audit --audit-level=low
+      - name: Audit production dependencies
+        run: |
+          npm audit --omit=dev --audit-level=high
+          npm --prefix backend audit --omit=dev --audit-level=high
+          npm --prefix frontend audit --omit=dev --audit-level=high
+      - name: Generate CycloneDX SBOMs
+        run: |
+          mkdir -p artifacts/sbom
+          npm sbom --sbom-format cyclonedx > artifacts/sbom/root.cdx.json
+          npm --prefix backend sbom --sbom-format cyclonedx > artifacts/sbom/backend.cdx.json
+          npm --prefix frontend sbom --sbom-format cyclonedx > artifacts/sbom/frontend.cdx.json
+      - name: Upload SBOMs
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cyclonedx-sboms
+          path: artifacts/sbom
+          if-no-files-found: error
+          retention-days: 14
+
+  docker-acceptance:
+    name: Ubuntu Docker and TRP acceptance
+    needs: quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    services:
+      postgres-e2e:
+        image: postgres:17.11-bookworm@sha256:84560e3b9c6874893fc4e2854f5dc3e7c1a37bc9d1dfd7a8c641310ae22ba5ad
+        env:
+          POSTGRES_DB: defy_e2e
+          POSTGRES_PASSWORD: defy_e2e_password
+          POSTGRES_USER: defy_e2e
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready --username defy_e2e --dbname defy_e2e"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Use Node.js 24
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+          package-manager-cache: true
+      - name: Require npm 11
+        run: npm install --global npm@11.6.1
+      - name: Install e2e tooling
+        run: |
+          npm ci
+          npm ci --prefix backend
+          npx playwright install --with-deps chromium
+      - name: Run isolated PostgreSQL and OpenSSL TRP e2e
+        env:
+          DATABASE_URL: postgres://defy_e2e:defy_e2e_password@127.0.0.1:55432/defy_e2e
+        run: npm --prefix backend run test:e2e
+      - name: Run full Docker acceptance
+        run: npm run test:docker:smoke
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: docker-playwright-failure
+          path: frontend/test-results
+          if-no-files-found: ignore
+          retention-days: 7

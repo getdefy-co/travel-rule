@@ -1,0 +1,3067 @@
+{
+  "info": {
+    "_postman_id": "8d55bfc8-4c72-46dc-9e20-858163ddc18e",
+    "name": "Defy Travel Rule API",
+    "description": "Local, secret-free examples for the Auth helper and all 47 operations in the in-app API reference. Import the paired localhost environment and follow docs/postman/README.md before sending state-changing requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication helper",
+      "description": "Run this helper once with local operator credentials to capture a JWT bearer token. Credentials and the resulting token remain local environment secrets.",
+      "item": [
+        {
+          "name": "Login and capture JWT",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Authenticates an active local user through the loopback gateway and stores response.data as jwt_token.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ],
+              "raw": "{{gateway_url}}/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{operator_email}}\",\n  \"password\": \"{{operator_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Login response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(body.code).to.eql(0);",
+                  "  pm.expect(body.message).to.eql(\"OK\");",
+                  "  pm.expect(typeof body.data).to.eql(\"string\"); pm.expect(body.data.length > 0).to.eql(true);",
+                  "  pm.environment.set(\"jwt_token\", body.data);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Protocol-neutral integration",
+      "description": "API-client-isolated orchestration on the Docker-internal listener. Use a scoped X-API-Key. Create/complete/cancel/settle are state-dependent alternatives; do not run every mutation sequentially in a Collection Runner.",
+      "item": [
+        {
+          "name": "Create orchestration transfer",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:write and Idempotency-Key. Exact replays return 200; new requests return 202. The valuation must be no older than five minutes.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{idempotency_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "transfers"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/transfers"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"external_id\": \"postman-synthetic-transfer\",\n  \"direction\": \"outbound\",\n  \"policy_profile\": \"TR-MASAK-2025\",\n  \"asset\": {\n    \"amount\": \"100\",\n    \"code\": \"USDC\",\n    \"network\": \"ethereum\",\n    \"is_stablecoin\": true,\n    \"dti\": \"4H95J0R2X\"\n  },\n  \"counterparty\": {\n    \"type\": \"hosted\",\n    \"travel_address\": \"{{travel_address}}\"\n  },\n  \"parties\": {\n    \"ivms101\": {\n      \"originator\": {\n        \"accountNumber\": [\n          \"SYNTHETIC-ORIGINATOR-ACCOUNT\"\n        ],\n        \"originatorPersons\": [\n          {\n            \"naturalPerson\": {\n              \"customerNumber\": \"SYNTHETIC-ORIGINATOR-CUSTOMER\",\n              \"geographicAddress\": [\n                {\n                  \"addressLine\": [\n                    \"Synthetic Test Address\"\n                  ],\n                  \"addressType\": \"HOME\",\n                  \"country\": \"TR\",\n                  \"townName\": \"Istanbul\"\n                }\n              ],\n              \"name\": {\n                \"nameIdentifier\": [\n                  {\n                    \"nameIdentifierType\": \"LEGL\",\n                    \"primaryIdentifier\": \"Example\",\n                    \"secondaryIdentifier\": \"Originator\"\n                  }\n                ]\n              }\n            }\n          }\n        ]\n      },\n      \"beneficiary\": {\n        \"accountNumber\": [\n          \"SYNTHETIC-BENEFICIARY-ACCOUNT\"\n        ],\n        \"beneficiaryPersons\": [\n          {\n            \"legalPerson\": {\n              \"customerNumber\": \"SYNTHETIC-BENEFICIARY-CUSTOMER\",\n              \"geographicAddress\": [\n                {\n                  \"addressLine\": [\n                    \"Synthetic Beneficiary Address\"\n                  ],\n                  \"addressType\": \"GEOG\",\n                  \"country\": \"TR\",\n                  \"townName\": \"Ankara\"\n                }\n              ],\n              \"name\": {\n                \"nameIdentifier\": [\n                  {\n                    \"legalPersonName\": \"Synthetic Beneficiary Ltd\",\n                    \"legalPersonNameIdentifierType\": \"LEGL\"\n                  }\n                ]\n              }\n            }\n          }\n        ]\n      }\n    }\n  },\n  \"valuations\": [\n    {\n      \"currency\": \"TRY\",\n      \"value\": 1000,\n      \"source\": \"synthetic-postman-example\",\n      \"as_of\": \"{{valuation_as_of}}\"\n    }\n  ],\n  \"risk_signals\": [\n    {\n      \"type\": \"sanctions\",\n      \"matched\": false\n    }\n  ],\n  \"connector_candidates\": [\n    \"native_trp\"\n  ],\n  \"required_capabilities\": [\n    \"ivms101_exchange\"\n  ],\n  \"description\": \"Synthetic Postman transfer for local protocol testing\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const idempotencyKey = pm.environment.get(\"idempotency_key\");",
+                  "if (!idempotencyKey) {",
+                  "  pm.environment.set(\"idempotency_key\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "  pm.environment.set(\"valuation_as_of\", pm.variables.replaceIn(\"{{$isoTimestamp}}\"));",
+                  "} else if (!pm.environment.get(\"valuation_as_of\")) {",
+                  "  pm.environment.set(\"valuation_as_of\", pm.variables.replaceIn(\"{{$isoTimestamp}}\"));",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is one of 202, 200\", () => pm.expect(pm.response.code).to.be.oneOf([202,200]))",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Create orchestration transfer response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  pm.expect(isRecord(body.case)).to.eql(true);",
+                  "  pm.expect(typeof body.case.id).to.eql(\"string\");",
+                  "  pm.expect(typeof body.case.state).to.eql(\"string\");",
+                  "  pm.expect(typeof body.case.action).to.eql(\"string\");",
+                  "  pm.expect(Array.isArray(body.case.reason_codes)).to.eql(true);",
+                  "  pm.expect(body.case.reason_codes.every(code => typeof code === \"string\")).to.eql(true);",
+                  "  pm.expect(body.exchange === null || (isRecord(body.exchange) && typeof body.exchange.id === \"string\" && typeof body.exchange.state === \"string\" && typeof body.exchange.connector === \"string\")).to.eql(true);",
+                  "  pm.environment.set(\"v1_transfer_id\", body.id);",
+                  "  pm.environment.set(\"case_id\", body.case.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get orchestration transfer",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:read and returns the owned PII-free aggregate.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "transfers",
+                "{{v1_transfer_id}}"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/transfers/{{v1_transfer_id}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Orchestration transfer response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.direction).to.eql(\"string\"); pm.expect(body.direction.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.counterparty_type).to.eql(\"string\"); pm.expect(body.counterparty_type.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.policy_profile).to.eql(\"string\"); pm.expect(body.policy_profile.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.created_at).to.eql(\"string\"); pm.expect(body.created_at.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.updated_at).to.eql(\"string\"); pm.expect(body.updated_at.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.amount === \"string\").to.eql(true);",
+                  "  pm.expect(isRecord(body.asset)).to.eql(true);",
+                  "  pm.expect(isRecord(body.case)).to.eql(true);",
+                  "  pm.expect(typeof body.case.id).to.eql(\"string\");",
+                  "  pm.expect(typeof body.case.state).to.eql(\"string\");",
+                  "  pm.expect([\"none\", \"compliance_reviewer\", \"compliance_approver\"].includes(body.case.required_approval)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.case.reason_codes)).to.eql(true);",
+                  "  pm.expect(body.exchange === null || isRecord(body.exchange)).to.eql(true);",
+                  "  pm.environment.set(\"case_id\", body.case.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Complete transfer information",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:write. Use the current case_version; stale versions return 409.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "transfers",
+                "{{v1_transfer_id}}",
+                "information"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/transfers/{{v1_transfer_id}}/information"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"expected_version\": {{case_version}}, \"information\": {\"description\": \"Synthetic information review completed\"}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Completed transfer information response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.case_state).to.eql(\"string\"); pm.expect(body.case_state.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.transfer_state).to.eql(\"string\"); pm.expect(body.transfer_state.length > 0).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.version)).to.eql(true);",
+                  "  pm.expect(body.exchange === null || isRecord(body.exchange)).to.eql(true);",
+                  "  pm.environment.set(\"case_version\", body.version);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel orchestration transfer",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:write. Run only for a nonterminal transfer chosen for cancellation.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "transfers",
+                "{{v1_transfer_id}}",
+                "cancel"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/transfers/{{v1_transfer_id}}/cancel"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Synthetic customer cancellation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Canceled orchestration transfer response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Settle orchestration transfer",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:write. Run only after the transfer reaches ready; the service does not broadcast a blockchain transaction.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "transfers",
+                "{{v1_transfer_id}}",
+                "settlement"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/transfers/{{v1_transfer_id}}/settlement"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"settlement_reference\": \"synthetic-settlement-reference-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 202\", () => pm.response.to.have.status(202));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Settled orchestration transfer response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preflight connector",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:read. Checks capability and health without sending party data.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "counterparties",
+                "preflight"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/counterparties/preflight"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"connector_candidates\": [\n    \"native_trp\"\n  ],\n  \"required_capabilities\": [\n    \"ivms101_exchange\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Connector preflight response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.available).to.eql(\"boolean\");",
+                  "  if (body.available) { pm.expect(typeof body.connector).to.eql(\"string\"); pm.expect(Array.isArray(body.capabilities)).to.eql(true); pm.expect(isRecord(body.health)).to.eql(true); }",
+                  "  else { pm.expect(typeof body.reason).to.eql(\"string\"); pm.expect(body.connector === undefined || typeof body.connector === \"string\").to.eql(true); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create webhook subscription",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires webhooks:manage. Supply a reachable HTTPS webhook_url and a 32-256 printable-character webhook_secret.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "webhook-subscriptions"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/webhook-subscriptions"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_types\": [\n    \"transfer.ready\",\n    \"exchange.failed\",\n    \"transfer.settled\"\n  ],\n  \"url\": \"{{webhook_url}}\",\n  \"secret\": \"{{webhook_secret}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Webhook subscription response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.status).to.eql(\"string\"); pm.expect(body.status.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.created_at).to.eql(\"string\"); pm.expect(body.created_at.length > 0).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.event_types)).to.eql(true);",
+                  "  pm.expect(body.event_types.every(event => typeof event === \"string\")).to.eql(true);",
+                  "  pm.environment.set(\"webhook_id\", body.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List webhook subscriptions",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires webhooks:manage. Safe metadata omits URL and signing secret.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "webhook-subscriptions"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/webhook-subscriptions"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Webhook subscription list response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.data)).to.eql(true);",
+                  "  pm.expect(body.data.every(item => isRecord(item) && typeof item.id === \"string\" && typeof item.status === \"string\" && Array.isArray(item.event_types) && typeof item.created_at === \"string\")).to.eql(true);",
+                  "  if (body.data.length > 0) pm.environment.set(\"webhook_id\", body.data[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Disable webhook subscription",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires webhooks:manage. Disable only an active subscription; success has no response body.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "method": "DELETE",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "webhook-subscriptions",
+                "{{webhook_id}}"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/webhook-subscriptions/{{webhook_id}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Response body is empty\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compliance operations",
+      "description": "JWT/OIDC role-gated compliance and encryption administration. Case decisions are state/version-sensitive alternatives. Re-encryption requires the configured active key ID and no other active job.",
+      "item": [
+        {
+          "name": "List compliance cases",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Case-viewer JWT/OIDC. Optional state, page, and limit filters are disabled by default.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "cases"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/v1/cases",
+              "query": [
+                {
+                  "key": "state",
+                  "value": "pending",
+                  "disabled": true,
+                  "description": "Optional case state"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Compliance case list response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.data)).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.total) && body.total >= 0).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.page) && body.page >= 1).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.limit) && body.limit >= 1).to.eql(true);",
+                  "  pm.expect(body.data.every(item => isRecord(item) && typeof item.id === \"string\" && typeof item.state === \"string\" && Number.isInteger(item.version))).to.eql(true);",
+                  "  if (body.data.length > 0) { pm.environment.set(\"case_id\", body.data[0].id); pm.environment.set(\"case_version\", body.data[0].version); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get compliance case",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Case-viewer JWT/OIDC. Captures the optimistic-lock version for a decision.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "cases",
+                "{{case_id}}"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/v1/cases/{{case_id}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Compliance case response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.transfer_id).to.eql(\"string\"); pm.expect(body.transfer_id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.transfer_state).to.eql(\"string\"); pm.expect(body.transfer_state.length > 0).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.version)).to.eql(true);",
+                  "  pm.expect(body.external_id === null || typeof body.external_id === \"string\").to.eql(true);",
+                  "  pm.expect([\"none\", \"compliance_reviewer\", \"compliance_approver\"].includes(body.required_approval)).to.eql(true);",
+                  "  pm.expect(body.exchange === null || isRecord(body.exchange)).to.eql(true);",
+                  "  pm.environment.set(\"case_id\", body.id);",
+                  "  pm.environment.set(\"case_version\", body.version);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Decide compliance case",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Requires a decision role. Choose approved, rejected, or escalated and use the current case_version. Four-eyes approval can require separate reviewer and approver actors.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "cases",
+                "{{case_id}}",
+                "decisions"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/v1/cases/{{case_id}}/decisions"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"decision\": \"approved\", \"expected_version\": {{case_version}}, \"reason\": \"Synthetic independent evidence review completed\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Compliance case decision response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.case_state).to.eql(\"string\"); pm.expect(body.case_state.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.transfer_state).to.eql(\"string\"); pm.expect(body.transfer_state.length > 0).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.version)).to.eql(true);",
+                  "  pm.environment.set(\"case_version\", body.version);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Export compliance audit",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Case-viewer JWT/OIDC. Treat integrity=invalid as an incident signal.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "cases",
+                "{{case_id}}",
+                "audit"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/v1/cases/{{case_id}}/audit"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Compliance audit response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.case_id).to.eql(\"string\"); pm.expect(body.case_id.length > 0).to.eql(true);",
+                  "  pm.expect([\"valid\", \"invalid\"].includes(body.integrity)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.events)).to.eql(true);",
+                  "  pm.expect(body.events.every(event => isRecord(event) && typeof event.id === \"string\" && /^\\d+$/.test(event.id) && typeof event.action === \"string\" && (event.actor_id === null || typeof event.actor_id === \"string\") && typeof event.actor_type === \"string\" && typeof event.aggregate_id === \"string\" && typeof event.aggregate_type === \"string\" && typeof event.created_at === \"string\" && typeof event.event_hash === \"string\" && isRecord(event.payload) && (event.previous_hash === null || typeof event.previous_hash === \"string\"))).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create re-encryption job",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Admin/platform_admin only. Replace target_key_id with the configured active key. Only one job may be active; review the key-rotation runbook first.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "encryption",
+                "reencryption-jobs"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/encryption/reencryption-jobs"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"target_key_id\": \"replace-with-configured-active-key-id\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 202\", () => pm.response.to.have.status(202));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Re-encryption job response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\");",
+                  "  pm.expect(typeof body.targetKeyId).to.eql(\"string\");",
+                  "  pm.expect(typeof body.state).to.eql(\"string\");",
+                  "  pm.expect(Number.isInteger(body.targetIndex)).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.processedRecords)).to.eql(true);",
+                  "  pm.expect(typeof body.createdAt).to.eql(\"string\");",
+                  "  pm.expect(typeof body.updatedAt).to.eql(\"string\");",
+                  "  pm.expect(body.completedAt === null || typeof body.completedAt === \"string\").to.eql(true);",
+                  "  pm.expect(body.lastErrorCode === null || typeof body.lastErrorCode === \"string\").to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List re-encryption jobs",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Admin/platform_admin only. Lists resumable re-encryption progress.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "v1",
+                "encryption",
+                "reencryption-jobs"
+              ],
+              "raw": "{{internal_url}}/travel-rule/v1/encryption/reencryption-jobs"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Re-encryption job list response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.data)).to.eql(true);",
+                  "  body.data.forEach(item => { pm.expect(typeof item.id).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(typeof item.targetKeyId).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(typeof item.state).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(Number.isInteger(item.targetIndex)).to.eql(true); });",
+                  "  body.data.forEach(item => { pm.expect(Number.isInteger(item.processedRecords)).to.eql(true); });",
+                  "  body.data.forEach(item => { pm.expect(typeof item.createdAt).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(typeof item.updatedAt).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(item.completedAt === null || typeof item.completedAt === \"string\").to.eql(true); });",
+                  "  body.data.forEach(item => { pm.expect(item.lastErrorCode === null || typeof item.lastErrorCode === \"string\").to.eql(true); });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Direct TRP compatibility",
+      "description": "Service-to-service TRP 3.2.1 compatibility APIs on backend:3002. Use a scoped X-API-Key. Approval/confirmation and rejection/cancellation are alternative state-dependent sequences.",
+      "item": [
+        {
+          "name": "Create TRP travel address",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:write. The captured Travel Address contains a bearer token; keep it local.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "travel-addresses"
+              ],
+              "raw": "{{internal_url}}/travel-rule/trp/travel-addresses"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"beneficiary_reference\": \"synthetic-postman-beneficiary\",\n  \"ttl_seconds\": 3600\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"TRP travel address response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.expires_at).to.eql(\"string\"); pm.expect(body.expires_at.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.travel_address).to.eql(\"string\"); pm.expect(body.travel_address.length > 0).to.eql(true);",
+                  "  pm.environment.set(\"inquiry_id\", body.id);",
+                  "  pm.environment.set(\"travel_address\", body.travel_address);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create TRP transfer",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:write and a Travel Address from a peer node. 202 means durable delivery remains retryable.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "transfers"
+              ],
+              "raw": "{{internal_url}}/travel-rule/trp/transfers"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"travel_address\": \"{{travel_address}}\",\n  \"asset\": {\n    \"dti\": \"4H95J0R2X\"\n  },\n  \"amount\": \"100\",\n  \"ivms101\": {\n    \"originator\": {\n      \"accountNumber\": [\n        \"SYNTHETIC-ORIGINATOR-ACCOUNT\"\n      ],\n      \"originatorPersons\": [\n        {\n          \"naturalPerson\": {\n            \"customerNumber\": \"SYNTHETIC-ORIGINATOR-CUSTOMER\",\n            \"geographicAddress\": [\n              {\n                \"addressLine\": [\n                  \"Synthetic Test Address\"\n                ],\n                \"addressType\": \"HOME\",\n                \"country\": \"TR\",\n                \"townName\": \"Istanbul\"\n              }\n            ],\n            \"name\": {\n              \"nameIdentifier\": [\n                {\n                  \"nameIdentifierType\": \"LEGL\",\n                  \"primaryIdentifier\": \"Example\",\n                  \"secondaryIdentifier\": \"Originator\"\n                }\n              ]\n            }\n          }\n        }\n      ]\n    },\n    \"beneficiary\": {\n      \"accountNumber\": [\n        \"SYNTHETIC-BENEFICIARY-ACCOUNT\"\n      ],\n      \"beneficiaryPersons\": [\n        {\n          \"legalPerson\": {\n            \"customerNumber\": \"SYNTHETIC-BENEFICIARY-CUSTOMER\",\n            \"geographicAddress\": [\n              {\n                \"addressLine\": [\n                  \"Synthetic Beneficiary Address\"\n                ],\n                \"addressType\": \"GEOG\",\n                \"country\": \"TR\",\n                \"townName\": \"Ankara\"\n              }\n            ],\n            \"name\": {\n              \"nameIdentifier\": [\n                {\n                  \"legalPersonName\": \"Synthetic Beneficiary Ltd\",\n                  \"legalPersonNameIdentifierType\": \"LEGL\"\n                }\n              ]\n            }\n          }\n        }\n      ]\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is one of 200, 202\", () => pm.expect(pm.response.code).to.be.oneOf([200,202]))",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"TRP transfer creation response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  if (pm.response.code === 202) { pm.expect(body.retryable).to.eql(true); pm.expect(body.state).to.eql(\"pending\"); }",
+                  "  if (pm.response.code === 200) { pm.expect(typeof body.protocol).to.eql(\"string\"); pm.expect(typeof body.direction).to.eql(\"string\"); pm.expect(body.asset === null || isRecord(body.asset)).to.eql(true); pm.expect(body.operation === null || isRecord(body.operation)).to.eql(true); }",
+                  "  pm.environment.set(\"transfer_id\", body.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get TRP transfer",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:read. Returns operation state without raw IVMS payload.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "transfers",
+                "{{transfer_id}}"
+              ],
+              "raw": "{{internal_url}}/travel-rule/trp/transfers/{{transfer_id}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"TRP transfer response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.protocol).to.eql(\"string\"); pm.expect(body.protocol.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.direction).to.eql(\"string\"); pm.expect(body.direction.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  pm.expect(body.amount === null || typeof body.amount === \"string\").to.eql(true);",
+                  "  pm.expect(body.asset === null || (isRecord(body.asset) && typeof body.asset.dti === \"string\" && body.asset.dti.length > 0)).to.eql(true);",
+                  "  pm.expect(typeof body.created_at).to.eql(\"string\"); pm.expect(body.created_at.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.updated_at).to.eql(\"string\"); pm.expect(body.updated_at.length > 0).to.eql(true);",
+                  "  pm.expect(body.expires_at === null || typeof body.expires_at === \"string\").to.eql(true);",
+                  "  pm.expect(body.operation === null || isRecord(body.operation)).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirm TRP transfer",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:write and an approved outbound transfer. For cancellation replace the body with exactly {\"canceled\": \"reason\"}; do not send txid and canceled together.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "transfers",
+                "{{transfer_id}}",
+                "confirm"
+              ],
+              "raw": "{{internal_url}}/travel-rule/trp/transfers/{{transfer_id}}/confirm"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"txid\": \"synthetic-chain-transaction-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is one of 200, 202\", () => pm.expect(pm.response.code).to.be.oneOf([200,202]))",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"TRP transfer confirmation response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.retryable).to.eql(\"boolean\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Retry TRP transfer",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires transfers:write and an eligible unsuperseded failed message or a pending message older than twice TRP_HTTP_TIMEOUT_MS. Otherwise returns 409.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{internal_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "transfers",
+                "{{transfer_id}}",
+                "retry"
+              ],
+              "raw": "{{internal_url}}/travel-rule/trp/transfers/{{transfer_id}}/retry"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is one of 200, 202\", () => pm.expect(pm.response.code).to.be.oneOf([200,202]))",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"TRP transfer retry response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.retryable).to.eql(\"boolean\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TRP operator APIs",
+      "description": "JWT/OIDC operator and administrator APIs through the loopback gateway. Create, decision, confirmation, retry, email, and token-consumption requests depend on prior state; select a scenario instead of running every mutation.",
+      "item": [
+        {
+          "name": "List inquiries",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Inquiry-reviewer JWT/OIDC. Optional search/status/pagination filters are disabled by default.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "inquiries"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/inquiries",
+              "query": [
+                {
+                  "key": "search",
+                  "value": "4H95J0R2X",
+                  "disabled": true,
+                  "description": "ID, asset DTI, or amount"
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Inquiry list response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.data)).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.total) && body.total >= 0).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.page) && body.page >= 1).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.limit) && body.limit >= 1).to.eql(true);",
+                  "  pm.expect(body.data.every(item => isRecord(item) && typeof item.id === \"string\" && typeof item.state === \"string\" && (item.asset_dti === null || typeof item.asset_dti === \"string\") && (item.amount === null || typeof item.amount === \"string\") && (item.expires_at === null || typeof item.expires_at === \"string\") && typeof item.created_at === \"string\" && typeof item.updated_at === \"string\")).to.eql(true);",
+                  "  if (body.data.length > 0) pm.environment.set(\"inquiry_id\", body.data[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get inquiry",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Inquiry-reviewer JWT/OIDC. Returns canonical IVMS101 detail.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "inquiries",
+                "{{inquiry_id}}"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/inquiries/{{inquiry_id}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Inquiry response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.protocol).to.eql(\"string\"); pm.expect(body.protocol.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.direction).to.eql(\"string\"); pm.expect(body.direction.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  pm.expect(body.amount === null || typeof body.amount === \"string\").to.eql(true);",
+                  "  pm.expect(body.asset === null || (isRecord(body.asset) && typeof body.asset.dti === \"string\" && body.asset.dti.length > 0)).to.eql(true);",
+                  "  pm.expect(typeof body.created_at).to.eql(\"string\"); pm.expect(body.created_at.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.updated_at).to.eql(\"string\"); pm.expect(body.updated_at.length > 0).to.eql(true);",
+                  "  pm.expect(body.expires_at === null || typeof body.expires_at === \"string\").to.eql(true);",
+                  "  pm.expect(body.ivms101 === null || isRecord(body.ivms101)).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Decide inquiry",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Inquiry-reviewer JWT/OIDC. For rejection replace the body with exactly {\"decision\":\"rejected\",\"reason\":\"Synthetic risk rejection\"}. Run once while pending.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "inquiries",
+                "{{inquiry_id}}",
+                "decision"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/inquiries/{{inquiry_id}}/decision"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\",\n  \"payment_address\": \"synthetic-payment-address-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is one of 200, 202\", () => pm.expect(pm.response.code).to.be.oneOf([200,202]))",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Inquiry decision response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.retryable).to.eql(\"boolean\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get management analytics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Management-viewer JWT/OIDC. The optional range is disabled so the server default applies.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "analytics"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/analytics",
+              "query": [
+                {
+                  "key": "range",
+                  "value": "30d",
+                  "disabled": true,
+                  "description": "7d, 30d, or 90d"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management analytics response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect([7, 30, 90].includes(body.range_days)).to.eql(true);",
+                  "  pm.expect(isRecord(body.summary)).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.summary.transfers)).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.summary.pending_inquiries)).to.eql(true);",
+                  "  pm.expect(typeof body.summary.confirmed_rate).to.eql(\"number\");",
+                  "  pm.expect(typeof body.summary.delivery_rate).to.eql(\"number\");",
+                  "  pm.expect(Array.isArray(body.trends)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.transfer_states)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.message_states)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.asset_amounts)).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List management transfers",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Management-viewer JWT/OIDC. Search is a trimmed, case-insensitive literal substring over id, asset_dti, and amount.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "transfers"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/transfers",
+              "query": [
+                {
+                  "key": "search",
+                  "value": "4H95J0R2X",
+                  "disabled": true
+                },
+                {
+                  "key": "direction",
+                  "value": "outbound",
+                  "disabled": true
+                },
+                {
+                  "key": "state",
+                  "value": "pending",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management transfer list response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.data)).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.total) && body.total >= 0).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.page) && body.page >= 1).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.limit) && body.limit >= 1).to.eql(true);",
+                  "  pm.expect(body.data.every(item => isRecord(item) && typeof item.id === \"string\" && typeof item.protocol === \"string\" && typeof item.direction === \"string\" && typeof item.state === \"string\" && (item.asset_dti === null || typeof item.asset_dti === \"string\") && (item.amount === null || typeof item.amount === \"string\") && typeof item.created_at === \"string\" && typeof item.updated_at === \"string\")).to.eql(true);",
+                  "  if (body.data.length > 0) pm.environment.set(\"management_transfer_id\", body.data[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get management transfer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Management-viewer JWT/OIDC. Includes server-derived action eligibility.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "transfers",
+                "{{management_transfer_id}}"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/transfers/{{management_transfer_id}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management transfer response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.protocol).to.eql(\"string\"); pm.expect(body.protocol.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.direction).to.eql(\"string\"); pm.expect(body.direction.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  pm.expect(isRecord(body.actions)).to.eql(true);",
+                  "  pm.expect(typeof body.actions.can_confirm).to.eql(\"boolean\");",
+                  "  pm.expect(typeof body.actions.can_cancel).to.eql(\"boolean\");",
+                  "  pm.expect(typeof body.actions.can_retry).to.eql(\"boolean\");",
+                  "  pm.expect(typeof body.actions.can_email).to.eql(\"boolean\");",
+                  "  pm.expect(typeof body.email_enabled).to.eql(\"boolean\");",
+                  "  pm.expect(body.email_fallback_available_at === null || typeof body.email_fallback_available_at === \"string\").to.eql(true);",
+                  "  pm.expect(Array.isArray(body.events)).to.eql(true);",
+                  "  pm.expect(body.events.every(event => typeof event.id === \"string\" && /^\\d+$/.test(event.id) && (event.actor_user_id === null || (typeof event.actor_user_id === \"string\" && /^\\d+$/.test(event.actor_user_id))))).to.eql(true);",
+                  "  pm.environment.set(\"management_transfer_id\", body.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List management messages",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Management-viewer JWT/OIDC. Search covers id, transfer_id, logical_identifier, request_identifier, status_code, and error_code.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "messages"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/messages",
+              "query": [
+                {
+                  "key": "search",
+                  "value": "synthetic",
+                  "disabled": true
+                },
+                {
+                  "key": "direction",
+                  "value": "outbound",
+                  "disabled": true
+                },
+                {
+                  "key": "phase",
+                  "value": "inquiry",
+                  "disabled": true
+                },
+                {
+                  "key": "delivery_state",
+                  "value": "failed",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management message list response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.data)).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.total) && body.total >= 0).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.page) && body.page >= 1).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.limit) && body.limit >= 1).to.eql(true);",
+                  "  pm.expect(body.data.every(item => isRecord(item) && typeof item.id === \"string\" && typeof item.transfer_id === \"string\" && typeof item.phase === \"string\" && typeof item.direction === \"string\" && typeof item.delivery_state === \"string\" && typeof item.created_at === \"string\")).to.eql(true);",
+                  "  if (body.data.length > 0) pm.environment.set(\"management_message_id\", body.data[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get management message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Management-viewer JWT/OIDC. Safe detail includes server-derived can_retry.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "messages",
+                "{{management_message_id}}"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/messages/{{management_message_id}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management message response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.transfer_id).to.eql(\"string\"); pm.expect(body.transfer_id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.phase).to.eql(\"string\"); pm.expect(body.phase.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.direction).to.eql(\"string\"); pm.expect(body.direction.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.delivery_state).to.eql(\"string\"); pm.expect(body.delivery_state.length > 0).to.eql(true);",
+                  "  pm.expect(isRecord(body.actions)).to.eql(true);",
+                  "  pm.expect(typeof body.actions.can_retry).to.eql(\"boolean\");",
+                  "  pm.environment.set(\"management_message_id\", body.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List management tokens",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Management-viewer JWT/OIDC. Search covers id and transfer_id; status accepts active, consumed, or expired.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "tokens"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/tokens",
+              "query": [
+                {
+                  "key": "search",
+                  "value": "synthetic",
+                  "disabled": true
+                },
+                {
+                  "key": "purpose",
+                  "value": "inquiry",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management token list response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.data)).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.total) && body.total >= 0).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.page) && body.page >= 1).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.limit) && body.limit >= 1).to.eql(true);",
+                  "  pm.expect(body.data.every(item => isRecord(item) && typeof item.id === \"string\" && typeof item.transfer_id === \"string\" && typeof item.purpose === \"string\" && typeof item.expires_at === \"string\" && typeof item.created_at === \"string\" && (item.consumed_at === null || typeof item.consumed_at === \"string\"))).to.eql(true);",
+                  "  if (body.data.length > 0) pm.environment.set(\"management_token_id\", body.data[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get management token",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Management-viewer JWT/OIDC. Returns lifecycle metadata without bearer value or digest.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "tokens",
+                "{{management_token_id}}"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/tokens/{{management_token_id}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management token response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.transfer_id).to.eql(\"string\"); pm.expect(body.transfer_id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.purpose).to.eql(\"string\"); pm.expect(body.purpose.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.expires_at).to.eql(\"string\"); pm.expect(body.expires_at.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.created_at).to.eql(\"string\"); pm.expect(body.created_at.length > 0).to.eql(true);",
+                  "  pm.expect(body.consumed_at === null || typeof body.consumed_at === \"string\").to.eql(true);",
+                  "  pm.environment.set(\"management_token_id\", body.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List management events",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Management-viewer JWT/OIDC. Search covers id, transfer_id, actor_user_id, and actor_role. BIGINT ids stay decimal strings.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "events"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/events",
+              "query": [
+                {
+                  "key": "search",
+                  "value": "synthetic",
+                  "disabled": true
+                },
+                {
+                  "key": "event_type",
+                  "value": "outbound_transfer_created",
+                  "disabled": true
+                },
+                {
+                  "key": "from_state",
+                  "value": "pending",
+                  "disabled": true
+                },
+                {
+                  "key": "to_state",
+                  "value": "approved",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management event list response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.data)).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.total) && body.total >= 0).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.page) && body.page >= 1).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.limit) && body.limit >= 1).to.eql(true);",
+                  "  pm.expect(body.data.every(item => isRecord(item) && typeof item.id === \"string\" && /^\\d+$/.test(item.id) && typeof item.transfer_id === \"string\" && typeof item.event_type === \"string\" && typeof item.created_at === \"string\" && (item.actor_user_id === null || (typeof item.actor_user_id === \"string\" && /^\\d+$/.test(item.actor_user_id))))).to.eql(true);",
+                  "  if (body.data.length > 0) pm.environment.set(\"event_id\", body.data[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get management event",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Management-viewer JWT/OIDC. Event and actor-user BIGINT values remain decimal strings.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "events",
+                "{{event_id}}"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/events/{{event_id}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management event response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.transfer_id).to.eql(\"string\"); pm.expect(body.transfer_id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.event_type).to.eql(\"string\"); pm.expect(body.event_type.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.created_at).to.eql(\"string\"); pm.expect(body.created_at.length > 0).to.eql(true);",
+                  "  pm.expect(/^\\d+$/.test(body.id)).to.eql(true);",
+                  "  pm.expect(body.actor_user_id === null || (typeof body.actor_user_id === \"string\" && /^\\d+$/.test(body.actor_user_id))).to.eql(true);",
+                  "  pm.environment.set(\"event_id\", body.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create management travel address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Admin/platform_admin only. Captured Travel Address is bearer material and must remain local.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "travel-addresses"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/travel-addresses"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"beneficiary_reference\": \"synthetic-postman-beneficiary\",\n  \"ttl_seconds\": 3600\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management travel address response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.expires_at).to.eql(\"string\"); pm.expect(body.expires_at.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.travel_address).to.eql(\"string\"); pm.expect(body.travel_address.length > 0).to.eql(true);",
+                  "  pm.environment.set(\"inquiry_id\", body.id);",
+                  "  pm.environment.set(\"travel_address\", body.travel_address);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create management transfer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Admin/platform_admin only. Requires a peer Travel Address. 202 indicates retryable delivery.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "transfers"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/transfers"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"travel_address\": \"{{travel_address}}\",\n  \"asset\": {\n    \"dti\": \"4H95J0R2X\"\n  },\n  \"amount\": \"100\",\n  \"ivms101\": {\n    \"originator\": {\n      \"accountNumber\": [\n        \"SYNTHETIC-ORIGINATOR-ACCOUNT\"\n      ],\n      \"originatorPersons\": [\n        {\n          \"naturalPerson\": {\n            \"customerNumber\": \"SYNTHETIC-ORIGINATOR-CUSTOMER\",\n            \"geographicAddress\": [\n              {\n                \"addressLine\": [\n                  \"Synthetic Test Address\"\n                ],\n                \"addressType\": \"HOME\",\n                \"country\": \"TR\",\n                \"townName\": \"Istanbul\"\n              }\n            ],\n            \"name\": {\n              \"nameIdentifier\": [\n                {\n                  \"nameIdentifierType\": \"LEGL\",\n                  \"primaryIdentifier\": \"Example\",\n                  \"secondaryIdentifier\": \"Originator\"\n                }\n              ]\n            }\n          }\n        }\n      ]\n    },\n    \"beneficiary\": {\n      \"accountNumber\": [\n        \"SYNTHETIC-BENEFICIARY-ACCOUNT\"\n      ],\n      \"beneficiaryPersons\": [\n        {\n          \"legalPerson\": {\n            \"customerNumber\": \"SYNTHETIC-BENEFICIARY-CUSTOMER\",\n            \"geographicAddress\": [\n              {\n                \"addressLine\": [\n                  \"Synthetic Beneficiary Address\"\n                ],\n                \"addressType\": \"GEOG\",\n                \"country\": \"TR\",\n                \"townName\": \"Ankara\"\n              }\n            ],\n            \"name\": {\n              \"nameIdentifier\": [\n                {\n                  \"legalPersonName\": \"Synthetic Beneficiary Ltd\",\n                  \"legalPersonNameIdentifierType\": \"LEGL\"\n                }\n              ]\n            }\n          }\n        }\n      ]\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is one of 200, 202\", () => pm.expect(pm.response.code).to.be.oneOf([200,202]))",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management transfer creation response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  if (pm.response.code === 202) { pm.expect(body.retryable).to.eql(true); pm.expect(body.state).to.eql(\"pending\"); }",
+                  "  if (pm.response.code === 200) { pm.expect(typeof body.protocol).to.eql(\"string\"); pm.expect(typeof body.direction).to.eql(\"string\"); pm.expect(body.operation === null || isRecord(body.operation)).to.eql(true); }",
+                  "  pm.environment.set(\"management_transfer_id\", body.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirm management transfer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Admin/platform_admin only. Run for an approved outbound transfer. For cancellation replace the body with exactly {\"canceled\": null} or a string reason.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "transfers",
+                "{{management_transfer_id}}",
+                "confirm"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/transfers/{{management_transfer_id}}/confirm"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"txid\": \"synthetic-chain-transaction-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is one of 200, 202\", () => pm.expect(pm.response.code).to.be.oneOf([200,202]))",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management transfer confirmation response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.state).to.eql(\"string\"); pm.expect(body.state.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.retryable).to.eql(\"boolean\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Retry management transfer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Admin/platform_admin only. Requires an eligible failed or crash-stale pending message; otherwise returns 409.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "transfers",
+                "{{management_transfer_id}}",
+                "retry"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/transfers/{{management_transfer_id}}/retry"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is one of 200, 202\", () => pm.expect(pm.response.code).to.be.oneOf([200,202]))",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Management transfer retry response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\"); pm.expect(body.id.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.retryable).to.eql(\"boolean\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create email invitation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Admin/platform_admin only. SMTP must be enabled and the outbound transfer must satisfy the server-owned fallback delay and eligibility rules.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "transfers",
+                "{{management_transfer_id}}",
+                "email-invitations"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/transfers/{{management_transfer_id}}/email-invitations"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient_email\": \"recipient@example.test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 202\", () => pm.response.to.have.status(202));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Email delivery job response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\");",
+                  "  pm.expect(typeof body.transfer_id).to.eql(\"string\");",
+                  "  pm.expect(typeof body.status).to.eql(\"string\");",
+                  "  pm.expect(typeof body.recipient_email).to.eql(\"string\");",
+                  "  pm.expect(Number.isInteger(body.attempts)).to.eql(true);",
+                  "  pm.expect(typeof body.created_at).to.eql(\"string\");",
+                  "  pm.expect(typeof body.updated_at).to.eql(\"string\");",
+                  "  pm.expect(typeof body.expires_at).to.eql(\"string\");",
+                  "  pm.expect(body.consumed_at === null || typeof body.consumed_at === \"string\").to.eql(true);",
+                  "  pm.expect(body.sent_at === null || typeof body.sent_at === \"string\").to.eql(true);",
+                  "  pm.expect(body.last_error_code === null || typeof body.last_error_code === \"string\").to.eql(true);",
+                  "  pm.environment.set(\"email_job_id\", body.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List email deliveries",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Admin/platform_admin only. Optional status and pagination filters are disabled by default.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "emails"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/emails",
+              "query": [
+                {
+                  "key": "status",
+                  "value": "dead_lettered",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Email delivery list response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(Array.isArray(body.data)).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.total) && body.total >= 0).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.page) && body.page >= 1).to.eql(true);",
+                  "  pm.expect(Number.isInteger(body.limit) && body.limit >= 1).to.eql(true);",
+                  "  body.data.forEach(item => { pm.expect(typeof item.id).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(typeof item.transfer_id).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(typeof item.status).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(typeof item.recipient_email).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(Number.isInteger(item.attempts)).to.eql(true); });",
+                  "  body.data.forEach(item => { pm.expect(typeof item.created_at).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(typeof item.updated_at).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(typeof item.expires_at).to.eql(\"string\"); });",
+                  "  body.data.forEach(item => { pm.expect(item.consumed_at === null || typeof item.consumed_at === \"string\").to.eql(true); });",
+                  "  body.data.forEach(item => { pm.expect(item.sent_at === null || typeof item.sent_at === \"string\").to.eql(true); });",
+                  "  body.data.forEach(item => { pm.expect(item.last_error_code === null || typeof item.last_error_code === \"string\").to.eql(true); });",
+                  "  if (body.data.length > 0) pm.environment.set(\"email_job_id\", body.data[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Retry email delivery",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Admin/platform_admin only. Email must be enabled and the job must be unexpired, dead_lettered, eligible, and still retain its token.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "management",
+                "emails",
+                "{{email_job_id}}",
+                "retry"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/management/emails/{{email_job_id}}/retry"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 202\", () => pm.response.to.have.status(202));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Retried email delivery job response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.id).to.eql(\"string\");",
+                  "  pm.expect(typeof body.transfer_id).to.eql(\"string\");",
+                  "  pm.expect(typeof body.status).to.eql(\"string\");",
+                  "  pm.expect(typeof body.recipient_email).to.eql(\"string\");",
+                  "  pm.expect(Number.isInteger(body.attempts)).to.eql(true);",
+                  "  pm.expect(typeof body.created_at).to.eql(\"string\");",
+                  "  pm.expect(typeof body.updated_at).to.eql(\"string\");",
+                  "  pm.expect(typeof body.expires_at).to.eql(\"string\");",
+                  "  pm.expect(body.consumed_at === null || typeof body.consumed_at === \"string\").to.eql(true);",
+                  "  pm.expect(body.sent_at === null || typeof body.sent_at === \"string\").to.eql(true);",
+                  "  pm.expect(body.last_error_code === null || typeof body.last_error_code === \"string\").to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consume email access",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Public, rate-limited, one-time access. Paste the 43-character fragment token locally; invalid, expired, consumed, and terminal-transfer links all return 410.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "email-access",
+                "consume"
+              ],
+              "raw": "{{gateway_url}}/travel-rule/trp/email-access/consume"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{email_access_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is one of 200, 410\", () => pm.expect(pm.response.code).to.be.oneOf([200,410]))",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Email access response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  if (pm.response.code === 410) pm.expect(body.message).to.eql(\"Link unavailable.\");",
+                  "  if (pm.response.code === 200) { pm.expect(Array.isArray(body.originators)).to.eql(true); pm.expect(Array.isArray(body.beneficiaries)).to.eql(true); pm.expect(isRecord(body.transfer)).to.eql(true); pm.expect(typeof body.transfer.id).to.eql(\"string\"); pm.expect(typeof body.transfer.protocol).to.eql(\"string\"); pm.expect(typeof body.transfer.direction).to.eql(\"string\"); pm.expect(typeof body.transfer.state).to.eql(\"string\"); pm.expect(typeof body.transfer.created_at).to.eql(\"string\"); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Public peer protocol",
+      "description": "External TLS 1.3 listener. Install the local test CA and configure the mTLS client certificate/key in Postman for localhost:3001. Keep SSL certificate verification enabled. Protocol mutation examples are separate state-dependent alternatives.",
+      "item": [
+        {
+          "name": "Get public service status",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Public allowlisted status endpoint; no client certificate is required.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{public_url}}"
+              ],
+              "path": [],
+              "raw": "{{public_url}}/"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Public service status response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(body.message).to.eql(\"Services are OK.\");",
+                  "  pm.expect(body.code).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get public liveness",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Public allowlisted process liveness; no PostgreSQL check.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{public_url}}"
+              ],
+              "path": [
+                "health",
+                "live"
+              ],
+              "raw": "{{public_url}}/health/live"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Public liveness response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(body.status).to.eql(\"live\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get public readiness",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Public allowlisted readiness; 503 is expected while PostgreSQL is unavailable.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{public_url}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ],
+              "raw": "{{public_url}}/health/ready"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is one of 200, 503\", () => pm.expect(pm.response.code).to.be.oneOf([200,503]))",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Public readiness response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(body.status).to.eql(pm.response.code === 200 ? \"ready\" : \"not-ready\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get public identity",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Public allowlisted VASP name, LEI, and certificate chain.",
+            "header": [],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{public_url}}"
+              ],
+              "path": [
+                "identity"
+              ],
+              "raw": "{{public_url}}/identity"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Public identity response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(typeof body.lei).to.eql(\"string\"); pm.expect(body.lei.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.name).to.eql(\"string\"); pm.expect(body.name.length > 0).to.eql(true);",
+                  "  pm.expect(typeof body.x509).to.eql(\"string\"); pm.expect(body.x509.length > 0).to.eql(true);",
+                  "  pm.expect(body.x509.includes(\"BEGIN CERTIFICATE\")).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Receive protocol inquiry",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires trusted mTLS plus api-version 3.2.1 and a UUID request-identifier. protocol_token must be an unconsumed inquiry token created by this node.",
+            "header": [
+              {
+                "key": "api-version",
+                "value": "3.2.1",
+                "type": "text"
+              },
+              {
+                "key": "request-identifier",
+                "value": "{{inquiry_request_identifier}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{public_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "protocol",
+                "inquiries",
+                "{{protocol_token}}"
+              ],
+              "raw": "{{public_url}}/travel-rule/trp/protocol/inquiries/{{protocol_token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"IVMS101\": {\n    \"originator\": {\n      \"accountNumber\": [\n        \"SYNTHETIC-ORIGINATOR-ACCOUNT\"\n      ],\n      \"originatorPersons\": [\n        {\n          \"naturalPerson\": {\n            \"customerNumber\": \"SYNTHETIC-ORIGINATOR-CUSTOMER\",\n            \"geographicAddress\": [\n              {\n                \"addressLine\": [\n                  \"Synthetic Test Address\"\n                ],\n                \"addressType\": \"HOME\",\n                \"country\": \"TR\",\n                \"townName\": \"Istanbul\"\n              }\n            ],\n            \"name\": {\n              \"nameIdentifier\": [\n                {\n                  \"nameIdentifierType\": \"LEGL\",\n                  \"primaryIdentifier\": \"Example\",\n                  \"secondaryIdentifier\": \"Originator\"\n                }\n              ]\n            }\n          }\n        }\n      ]\n    },\n    \"beneficiary\": {\n      \"accountNumber\": [\n        \"SYNTHETIC-BENEFICIARY-ACCOUNT\"\n      ],\n      \"beneficiaryPersons\": [\n        {\n          \"legalPerson\": {\n            \"customerNumber\": \"SYNTHETIC-BENEFICIARY-CUSTOMER\",\n            \"geographicAddress\": [\n              {\n                \"addressLine\": [\n                  \"Synthetic Beneficiary Address\"\n                ],\n                \"addressType\": \"GEOG\",\n                \"country\": \"TR\",\n                \"townName\": \"Ankara\"\n              }\n            ],\n            \"name\": {\n              \"nameIdentifier\": [\n                {\n                  \"legalPersonName\": \"Synthetic Beneficiary Ltd\",\n                  \"legalPersonNameIdentifierType\": \"LEGL\"\n                }\n              ]\n            }\n          }\n        }\n      ]\n    }\n  },\n  \"asset\": {\n    \"dti\": \"4H95J0R2X\"\n  },\n  \"amount\": \"100\",\n  \"callback\": \"https://peer.example.test/travel-rule/trp/protocol/resolutions/synthetic-token\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requestIdentifier = pm.environment.get(\"inquiry_request_identifier\");",
+                  "if (!requestIdentifier) pm.environment.set(\"inquiry_request_identifier\", pm.variables.replaceIn(\"{{$guid}}\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const isRecord = value => value !== null && typeof value === \"object\" && !Array.isArray(value);",
+                  "pm.test(\"Protocol inquiry response contract\", () => {",
+                  "  pm.expect(isRecord(body)).to.eql(true);",
+                  "  pm.expect(body.version).to.eql(\"3.2.1\");",
+                  "});",
+                  "pm.test(\"Protocol inquiry response headers\", () => {",
+                  "  pm.expect(pm.response.headers.get(\"api-version\")).to.eql(\"3.2.1\");",
+                  "  pm.expect(pm.response.headers.get(\"request-identifier\")).to.eql(pm.environment.get(\"inquiry_request_identifier\"));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Receive protocol resolution",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires trusted mTLS and an unconsumed resolution token. For rejection use exactly {\"rejected\":\"Synthetic risk rejection\"}. Success has no body.",
+            "header": [
+              {
+                "key": "api-version",
+                "value": "3.2.1",
+                "type": "text"
+              },
+              {
+                "key": "request-identifier",
+                "value": "{{resolution_request_identifier}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{public_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "protocol",
+                "resolutions",
+                "{{protocol_token}}"
+              ],
+              "raw": "{{public_url}}/travel-rule/trp/protocol/resolutions/{{protocol_token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approved\": {\n    \"address\": \"synthetic-payment-address-001\",\n    \"callback\": \"https://peer.example.test/travel-rule/trp/protocol/confirmations/synthetic-token\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requestIdentifier = pm.environment.get(\"resolution_request_identifier\");",
+                  "if (!requestIdentifier) pm.environment.set(\"resolution_request_identifier\", pm.variables.replaceIn(\"{{$guid}}\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Response body is empty\", () => pm.expect(pm.response.text()).to.eql(\"\"));",
+                  "pm.test(\"Protocol resolution response headers\", () => {",
+                  "  pm.expect(pm.response.headers.get(\"api-version\")).to.eql(\"3.2.1\");",
+                  "  pm.expect(pm.response.headers.get(\"request-identifier\")).to.eql(pm.environment.get(\"resolution_request_identifier\"));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Receive protocol confirmation",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Requires trusted mTLS and an unconsumed confirmation token. For cancellation use exactly {\"canceled\":null} or a string reason. Success has no body.",
+            "header": [
+              {
+                "key": "api-version",
+                "value": "3.2.1",
+                "type": "text"
+              },
+              {
+                "key": "request-identifier",
+                "value": "{{confirmation_request_identifier}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{public_url}}"
+              ],
+              "path": [
+                "travel-rule",
+                "trp",
+                "protocol",
+                "confirmations",
+                "{{protocol_token}}"
+              ],
+              "raw": "{{public_url}}/travel-rule/trp/protocol/confirmations/{{protocol_token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"txid\": \"synthetic-chain-transaction-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requestIdentifier = pm.environment.get(\"confirmation_request_identifier\");",
+                  "if (!requestIdentifier) pm.environment.set(\"confirmation_request_identifier\", pm.variables.replaceIn(\"{{$guid}}\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Response body is empty\", () => pm.expect(pm.response.text()).to.eql(\"\"));",
+                  "pm.test(\"Protocol confirmation response headers\", () => {",
+                  "  pm.expect(pm.response.headers.get(\"api-version\")).to.eql(\"3.2.1\");",
+                  "  pm.expect(pm.response.headers.get(\"request-identifier\")).to.eql(pm.environment.get(\"confirmation_request_identifier\"));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

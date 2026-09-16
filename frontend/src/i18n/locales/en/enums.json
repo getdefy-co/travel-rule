@@ -1,0 +1,87 @@
+{
+  "roles": {
+    "user": "User",
+    "admin": "Admin",
+    "platform_admin": "Platform admin",
+    "integration_operator": "Integration operator",
+    "compliance_reviewer": "Compliance reviewer",
+    "compliance_approver": "Compliance approver",
+    "auditor": "Auditor"
+  },
+  "userStatus": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "direction": {
+    "inbound": "Inbound",
+    "outbound": "Outbound"
+  },
+  "deliveryState": {
+    "received": "Received",
+    "delivered": "Delivered",
+    "pending": "Pending",
+    "failed": "Failed"
+  },
+  "messagePhase": {
+    "inquiry": "Inquiry",
+    "resolution": "Resolution",
+    "confirmation": "Confirmation"
+  },
+  "inquiryStatus": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "confirmed": "Confirmed",
+    "canceled": "Canceled",
+    "expired": "Expired"
+  },
+  "caseState": {
+    "pending": "Pending",
+    "needs_information": "Needs information",
+    "escalated": "Escalated",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "expired": "Expired"
+  },
+  "orchestrationTransferState": {
+    "created": "Created",
+    "on_hold": "On hold",
+    "ready": "Ready",
+    "released": "Released",
+    "settled": "Settled",
+    "returned": "Returned",
+    "canceled": "Canceled"
+  },
+  "requiredApproval": {
+    "none": "None",
+    "compliance_reviewer": "Compliance reviewer",
+    "compliance_approver": "Compliance approver"
+  },
+  "eventType": {
+    "created": "Created",
+    "inquiry_approved": "Inquiry approved",
+    "inquiry_received": "Inquiry received",
+    "inquiry_rejected": "Inquiry rejected",
+    "manual_approval": "Manual approval",
+    "manual_rejection": "Manual rejection",
+    "outbound_transfer_created": "Outbound transfer created",
+    "transfer_canceled": "Transfer canceled",
+    "transfer_confirmed": "Transfer confirmed",
+    "transfer_expired": "Transfer expired",
+    "travel_address_created": "Travel Address created"
+  },
+  "personType": {
+    "natural": "Natural person",
+    "legal": "Legal person"
+  },
+  "tokenStatus": { "active": "Active", "consumed": "Consumed", "expired": "Expired" },
+  "emailStatus": {
+    "queued": "Queued",
+    "processing": "Processing",
+    "failed": "Failed",
+    "sent": "Sent",
+    "dead_lettered": "Dead lettered",
+    "consumed": "Consumed",
+    "expired": "Expired"
+  }
+}

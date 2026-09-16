@@ -1,0 +1,89 @@
+{
+  "name": "travel-rule-backend",
+  "version": "1.0.0",
+  "description": "Express backend for Defy Travel Rule authentication, compliance orchestration, and TRP 3.2.1 messaging with IVMS101 and PostgreSQL.",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "babel src --out-dir dist --copy-files --delete-dir-on-start",
+    "start": "node dist/index.js",
+    "dev": "nodemon --exec babel-node src/index.js",
+    "lint": "eslint . --ext .js,.jsx",
+    "lint:ci": "eslint . --ext .js,.jsx --max-warnings=0",
+    "lint:fix": "eslint . --ext .js,.jsx --fix",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write .",
+    "test": "jest",
+    "test:e2e": "jest --config jest.e2e.config.js --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --runInBand --coverage",
+    "verify": "npm run lint:ci && npm run format:check && npm run test:ci && npm run build",
+    "pm2:start": "pm2 start ecosystem.config.js"
+  },
+  "keywords": [
+    "authentication",
+    "express",
+    "ivms101",
+    "postgresql",
+    "travel-rule",
+    "trp",
+    "vasp"
+  ],
+  "author": "Defy",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getdefy-co/travel-rule.git",
+    "directory": "backend"
+  },
+  "bugs": {
+    "url": "https://github.com/getdefy-co/travel-rule/issues"
+  },
+  "homepage": "https://github.com/getdefy-co/travel-rule#readme",
+  "engines": {
+    "node": ">=24.0.0 <25.0.0",
+    "npm": ">=11.0.0"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.29.7",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "ivms101": "2.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "nodemailer": "^9.0.5",
+    "pg": "^8.21.0",
+    "validator": "^13.15.35",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.29.7",
+    "@babel/core": "^7.29.7",
+    "@babel/node": "^7.29.7",
+    "@babel/plugin-transform-runtime": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
+    "babel-jest": "^30.4.1",
+    "babel-plugin-module-resolver": "^5.0.3",
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.32.0",
+    "jest": "^30.4.2",
+    "nock": "^14.0.16",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.8.3"
+  },
+  "overrides": {
+    "body-parser": "^2.3.0",
+    "brace-expansion@^1.0.0": "^1.1.18",
+    "brace-expansion@^2.0.0": "^2.1.4",
+    "brace-expansion@^5.0.0": "^5.0.9",
+    "fast-uri": "^3.1.5",
+    "js-yaml@^4.0.0": "^4.3.1",
+    "qs": "^6.15.2"
+  }
+}

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Future public security reporting
+    url: https://github.com/defy/defy-travel-rule/security/advisories/new
+    about: Not available during private pre-release. Maintainers must enable and verify this form before public visibility; authorized collaborators currently use an approved private repository channel.
+  - name: Support guide
+    url: https://github.com/defy/defy-travel-rule/blob/main/SUPPORT.md
+    about: Read support scope and required sanitized evidence before filing.

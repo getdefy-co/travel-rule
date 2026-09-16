@@ -1,0 +1,50 @@
+{
+  "name": "travel-rule",
+  "version": "1.0.0",
+  "description": "Self-hosted Defy Travel Rule platform with TRP 3.2.1, IVMS101, compliance orchestration, and an operator UI.",
+  "private": true,
+  "scripts": {
+    "test:docs": "node --test scripts/tests/*.test.mjs",
+    "update:docs-acceptance-lock": "node scripts/generate-docs-acceptance-lock.mjs",
+    "verify:docs": "npm run test:docs && node scripts/validate-docs.mjs",
+    "verify:backend": "npm --prefix backend run verify",
+    "verify:frontend": "npm --prefix frontend run verify",
+    "verify": "npm run verify:docs && npm run verify:backend && npm run verify:frontend",
+    "verify:docker:static": "bash docker/tests/runtime-bootstrap.test.sh && bash docker/tests/runtime-bootstrap-recovery.test.sh && bash docker/tests/bootstrap-config.integration.sh && bash docker/tests/compose-smtp.integration.sh && bash docker/tests/compose-structure.test.sh && bash docker/tests/docker-smoke-cleanup.test.sh && bash docker/tests/docker-smoke-idempotency.test.sh && bash docker/tests/docker-smoke-management.test.sh && bash docker/tests/docker-smoke-port-bindings.test.sh && bash docker/tests/docker-smoke-protocol.test.sh && bash docker/tests/docker-smoke-schema-failure.test.sh",
+    "test:docker:smoke": "bash scripts/docker-smoke.sh",
+    "test:e2e:frontend:docker": "playwright test --config=frontend/playwright.docker.config.js",
+    "hooks:precommit": "npm --prefix backend run lint:ci && npm --prefix backend run test:coverage && npm --prefix frontend run verify",
+    "prepare": "husky"
+  },
+  "engines": {
+    "node": ">=24.0.0 <25.0.0",
+    "npm": ">=11.0.0"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getdefy-co/travel-rule.git"
+  },
+  "bugs": {
+    "url": "https://github.com/getdefy-co/travel-rule/issues"
+  },
+  "homepage": "https://github.com/getdefy-co/travel-rule#readme",
+  "keywords": [
+    "travel-rule",
+    "travelrule",
+    "trp",
+    "ivms101",
+    "vasp",
+    "cryptocurrency-compliance",
+    "express",
+    "nextjs",
+    "postgresql",
+    "docker"
+  ],
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
+    "@playwright/test": "1.62.1",
+    "husky": "^9.1.7"
+  }
+}

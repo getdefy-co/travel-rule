@@ -1,0 +1,85 @@
+Defy Travel Rule Third-Party Notices
+
+This file records evidence observed from the installed, lockfile-resolved
+production dependency metadata on 2026-08-26. It is informational and does
+not replace the license text, copyright notices, or attribution requirements
+shipped by each dependency. The CycloneDX SBOM produced in CI is the complete
+machine-readable transitive inventory; distributors must preserve all
+applicable upstream notices and license files.
+
+Backend direct production dependencies
+
+- `@babel/runtime` 7.29.7 — MIT
+- `bcrypt` 6.0.0 — MIT
+- `cors` 2.8.6 — MIT
+- `dotenv` 17.4.2 — BSD-2-Clause
+- `express` 5.2.1 — MIT
+- `express-rate-limit` 8.5.2 — MIT
+- `helmet` 8.2.0 — MIT
+- `ivms101` 2.0.0 — UNRESOLVED; see the release gate below
+- `jsonwebtoken` 9.0.3 — MIT
+- `morgan` 1.11.0 — MIT
+- `nodemailer` 9.0.5 — MIT-0
+- `pg` 8.21.0 — MIT
+- `validator` 13.15.35 — MIT
+- `winston` 3.19.0 — MIT
+
+Frontend direct production dependencies
+
+- `@radix-ui/react-dialog` 1.1.23 — MIT
+- `@radix-ui/react-dropdown-menu` 2.1.24 — MIT
+- `@radix-ui/react-label` 2.1.15 — MIT
+- `@radix-ui/react-select` 2.3.7 — MIT
+- `@radix-ui/react-separator` 1.1.15 — MIT
+- `@radix-ui/react-slot` 1.3.3 — MIT
+- `@radix-ui/react-tooltip` 1.2.16 — MIT
+- `axios` 1.19.0 — MIT
+- `class-variance-authority` 0.7.1 — Apache-2.0
+- `clsx` 2.1.1 — MIT
+- `dayjs` 1.11.20 — MIT
+- `i18next` 23.16.8 — MIT
+- `i18next-browser-languagedetector` 8.2.1 — MIT
+- `lucide-react` 0.525.0 — ISC
+- `next` 16.3.0 — MIT
+- `next-themes` 0.4.6 — MIT
+- `radix-ui` 1.6.7 — MIT
+- `react` 19.2.5 — MIT
+- `react-dom` 19.2.5 — MIT
+- `react-i18next` 15.7.4 — MIT
+- `react-icons` 5.6.0 — MIT
+- `recharts` 3.8.0 — MIT
+- `sonner` 2.0.7 — MIT
+- `tailwind-merge` 3.5.0 — MIT
+
+Generated frontend component source
+
+- shadcn/ui CLI 4.19.0 — MIT; the `chart`, `alert-dialog`, `alert`, `empty`,
+  `field`, `input-group`, `progress`, `tabs`, `textarea`, `toggle-group`, and
+  `toggle` component source was generated through the official CLI, reviewed,
+  and adapted to this repository's lint and accessibility contracts.
+
+Transitive metadata summary
+
+The backend production lock graph contains 140 packages: 127 declare MIT,
+7 ISC, 2 BSD-3-Clause, 1 BSD-2-Clause, 1 Apache-2.0, 1 MIT-0, and 1 has no
+declared license (`ivms101`). The frontend production lock graph contains 208
+package entries: 157 declare MIT, 18 Apache-2.0, 14 ISC, 10
+LGPL-3.0-or-later, 2 BSD-3-Clause, 1 0BSD, 1 CC-BY-4.0, and 5 use composite
+SPDX expressions combining Apache-2.0, LGPL-3.0-or-later, MIT, or ISC.
+Consult the CI SBOM and the exact installed package license files before
+redistribution.
+
+Public-release gate: ivms101 2.0.0
+
+The installed `ivms101@2.0.0` package metadata, npm registry metadata, and
+published tarball do not provide a conclusive license field, repository URL,
+homepage, or included LICENSE file. Its README states MIT and refers to a
+LICENSE file that is absent from the package. Bundled IVMS specification text
+also declares separate Creative Commons Attribution-NoDerivatives 4.0 terms.
+
+This evidence is internally inconsistent and is not sufficient to conclude
+that every shipped file or the package as a whole may be redistributed under
+MIT. The issue is unresolved. Keep the Defy repository private and do not
+publish a release or container distribution until authoritative upstream
+license evidence and the treatment of bundled specification material are
+reviewed and documented.

@@ -1,0 +1,5 @@
+import { render, screen } from "@testing-library/react";
+import { Search } from "lucide-react";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, InputGroupTextarea } from "@/components/ui/input-group";
+test("groups an input with a semantic addon", () => { render(<InputGroup><InputGroupAddon><Search /></InputGroupAddon><InputGroupInput aria-label="Search" /></InputGroup>); expect(screen.getByRole("textbox", { name: "Search" })).toHaveAttribute("data-slot", "input-group-control"); });
+test("supports grouped textarea, text, and button controls", () => { render(<InputGroup><InputGroupTextarea aria-label="Payload" /><InputGroupAddon align="block-end"><InputGroupText>JSON</InputGroupText><InputGroupButton>Format</InputGroupButton></InputGroupAddon></InputGroup>); expect(screen.getByRole("textbox", { name: "Payload" })).toHaveAttribute("data-slot", "input-group-control"); expect(screen.getByRole("button", { name: "Format" })).toHaveAttribute("type", "button"); });
