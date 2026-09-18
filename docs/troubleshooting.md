@@ -33,7 +33,7 @@ Do not change host bindings until you understand which security boundary they pr
 
 ## Bootstrap fails
 
-`runtime-bootstrap` fails closed when existing backend/PostgreSQL secret volumes are corrupt or contain mismatched database credentials. It does not overwrite valid state. `admin-bootstrap` fails when database metadata is not canonical, when `admin@getdefy.co` conflicts with a non-`admin` or inactive account, or when the new default is absent and the legacy `admin@defy.local` account has the same conflict. Exact-TRP backend startup also fails before listeners open when persisted service-key envelope metadata is malformed, the encryption key cannot decrypt it, or decrypted content is invalid.
+`runtime-bootstrap` fails closed when existing backend/PostgreSQL secret volumes are corrupt or contain mismatched database credentials. It does not overwrite valid state. `admin-bootstrap` fails when database metadata is not canonical or when `admin@getdefy.co` conflicts with a non-`admin` or inactive account. Exact-TRP backend startup also fails before listeners open when persisted service-key envelope metadata is malformed, the encryption key cannot decrypt it, or decrypted content is invalid.
 
 Review only sanitized logs:
 
@@ -57,7 +57,7 @@ The gateway is intentionally bound to `127.0.0.1`. Remote browsers cannot reach 
 
 ## Login fails
 
-The local credential is `admin@getdefy.co` / `defyadmin` only for a fresh local Compose database. Bootstrap never restores that password after it has been changed. An existing volume with an active legacy `admin@defy.local` account keeps that account and password instead of creating the new default. Unknown, wrong-password, and inactive login all intentionally return generic HTTP 401.
+The local credential is `admin@getdefy.co` / `defyadmin` when bootstrap creates the account in a local Compose database. Bootstrap never restores that password after it has been changed. Unknown, wrong-password, and inactive login all intentionally return generic HTTP 401.
 
 Check database readiness without exposing user data:
 

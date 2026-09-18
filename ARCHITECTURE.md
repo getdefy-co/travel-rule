@@ -100,7 +100,7 @@ Named volumes preserve:
 - `bootstrap-state`: bootstrap publication coordination state
 - `postgres-data`: PostgreSQL cluster data
 
-On a fresh installation, `admin-bootstrap` creates `admin@getdefy.co` with role `admin` and password `defyadmin` only if the email is absent. It accepts an existing active default admin without changing its hash. When the new default is absent, it also preserves an active legacy `admin@defy.local` administrator without creating a second account or changing its password. Role and activity conflicts fail closed. These credentials and the generated PKI are local fixtures, not production defaults.
+`admin-bootstrap` creates `admin@getdefy.co` with role `admin` and password `defyadmin` only if the email is absent. It accepts an existing active default admin without changing its hash. Role and activity conflicts fail closed. These credentials and the generated PKI are local fixtures, not production defaults.
 
 In exact TRP mode, startup decrypts the persisted `trp_configuration.service_api_key` before opening listeners. The bootstrap `SERVICE_API_KEY` creates that row only when absent; it never overwrites a rotated row. AES-256-GCM envelopes use version 2 plus `key_id`; legacy version-1 records use the explicitly configured legacy key. Unknown key IDs, malformed envelopes, or decryption failures fail closed. Administrator reveal is no-store; rotation commits encrypted configuration and secret-free action history before changing the in-memory guard, so the old compatibility key becomes invalid immediately.
 

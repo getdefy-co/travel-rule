@@ -3,7 +3,6 @@ import { assertCanonicalSchema } from './schema';
 const ADMIN_EMAIL = 'admin@getdefy.co';
 const ADMIN_PASSWORD = 'defyadmin';
 const ADMIN_ROLE = 'admin';
-const LEGACY_ADMIN_EMAIL = 'admin@defy.local';
 const LOOKUP_ADMIN = 'SELECT role, is_active FROM auth_users WHERE email = $1';
 const INSERT_ADMIN = 'INSERT INTO auth_users (email, password, role, is_active) VALUES ($1, $2, $3, TRUE) ON CONFLICT (email) DO NOTHING RETURNING role, is_active';
 
@@ -20,12 +19,6 @@ const ensureLocalAdmin = async ({ databasePool, hashPassword }) => {
 
   if (existing.rows[0]) {
     return validateExistingAdmin(existing.rows[0]);
-  }
-
-  const legacy = await databasePool.query(LOOKUP_ADMIN, [LEGACY_ADMIN_EMAIL]);
-
-  if (legacy.rows[0]) {
-    return validateExistingAdmin(legacy.rows[0]);
   }
 
   const passwordHash = await hashPassword(ADMIN_PASSWORD);

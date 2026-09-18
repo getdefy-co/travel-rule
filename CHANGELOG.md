@@ -16,7 +16,7 @@ All notable changes to this project are documented in this file. The format foll
 ### Changed
 
 - Auth failures and forgot-password acknowledgement resist user enumeration.
-- Local administrator bootstrap preserves an active legacy `admin@defy.local` account instead of creating a second default administrator.
+- Local administrator bootstrap preserves an existing active `admin@getdefy.co` account without changing its password and fails closed on role or activity conflicts.
 - Passwords enforce an 8–72 UTF-8-byte boundary.
 - JWTs carry `session_version`; password, role, and activity changes revoke older sessions.
 - Reset tokens are stored as SHA-256 digests and Auth multi-step writes are transactional.

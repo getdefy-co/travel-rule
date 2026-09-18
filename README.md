@@ -75,9 +75,7 @@ Open [http://localhost:3000](http://localhost:3000) and sign in:
 | Email | `admin@getdefy.co` |
 | Password | `defyadmin` |
 
-These credentials are development fixtures. Never reuse them in production. Bootstrap creates this account only when it is absent and never resets its password.
-
-Existing local volumes that contain an active legacy `admin@defy.local` administrator remain unchanged. Continue using that account and its current password, or delete the local volumes to create a fresh installation. Bootstrap fails closed if either default email belongs to an inactive account or a role other than `admin`.
+These credentials are development fixtures. Never reuse them in production. Bootstrap creates this account only when it is absent and never resets its password. Bootstrap fails closed if this email belongs to an inactive account or a role other than `admin`.
 
 Confirm readiness, inspect the stack, and stop it without deleting persistent data:
 
