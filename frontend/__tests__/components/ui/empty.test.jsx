@@ -1,0 +1,3 @@
+import { render, screen } from "@testing-library/react";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+test("renders complete empty-state composition", () => { render(<Empty><EmptyHeader><EmptyMedia>!</EmptyMedia><EmptyTitle>No records</EmptyTitle><EmptyDescription>Try again.</EmptyDescription></EmptyHeader><EmptyContent><button>Refresh</button></EmptyContent></Empty>); expect(screen.getByText("No records")).toHaveAttribute("data-slot", "empty-title"); expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument(); });

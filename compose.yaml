@@ -1,0 +1,194 @@
+name: defy-trp
+
+secrets:
+  smtp-password:
+    file: "${SMTP_PASSWORD_FILE:-./docker/secrets/email_password.disabled}"
+
+services:
+  gateway:
+    build:
+      context: ./docker/nginx
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    init: true
+    networks:
+      - app
+    ports:
+      - "127.0.0.1:3000:8080"
+    read_only: true
+    restart: unless-stopped
+    stop_grace_period: 10s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m,uid=101,gid=101,mode=0700
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://0.0.0.0:8080/login"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      HOSTNAME: 0.0.0.0
+      NODE_ENV: production
+      PORT: "3000"
+    init: true
+    networks:
+      - app
+    read_only: true
+    restart: unless-stopped
+    stop_grace_period: 20s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,uid=1000,gid=1000,mode=0700
+      - /app/.next/cache:rw,noexec,nosuid,size=64m,uid=1000,gid=1000,mode=0700
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://0.0.0.0:3000/login').then(response => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    depends_on:
+      admin-bootstrap:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      runtime-bootstrap:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL_FILE: /run/secrets/backend/current/database-url
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_MODE: ${EMAIL_MODE:-disabled}
+      EMAIL_PASS_FILE: /run/secrets/email_password
+      EMAIL_PORT: ${EMAIL_PORT:-}
+      EMAIL_USER: ${EMAIL_USER:-}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      JWT_KEY_FILE: /run/secrets/backend/current/jwt-key
+      NODE_ENV: production
+      PORT: "3002"
+      PROTOCOL: TRP
+      SERVICE_API_KEY_FILE: /run/secrets/backend/current/service-api-key
+      TRP_CLIENT_CA_PATH: /run/secrets/backend/current/ca-cert.pem
+      TRP_CLIENT_CERT_PATH: /run/secrets/backend/current/client-cert.pem
+      TRP_CLIENT_KEY_PATH: /run/secrets/backend/current/client-key.pem
+      TRP_DATA_ENCRYPTION_KEY_FILE: /run/secrets/backend/current/trp-encryption-key
+      TRP_EMAIL_FALLBACK_DELAY_MINUTES: ${TRP_EMAIL_FALLBACK_DELAY_MINUTES:-30}
+      TRP_PORT: "3001"
+      TRP_PUBLIC_BASE_URL: https://0.0.0.0:3001
+      TRP_SERVER_CA_PATH: /run/secrets/backend/current/ca-cert.pem
+      TRP_SERVER_CERT_PATH: /run/secrets/backend/current/server-cert.pem
+      TRP_SERVER_KEY_PATH: /run/secrets/backend/current/server-key.pem
+      TRP_VASP_LEI: DEFYLOCALVASP0000000
+      TRP_VASP_NAME: Defy Local Development VASP
+    init: true
+    networks:
+      - app
+      - data
+    ports:
+      - "0.0.0.0:3001:3001"
+    read_only: true
+    restart: unless-stopped
+    secrets:
+      - source: smtp-password
+        target: email_password
+    stop_grace_period: 30s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,uid=1000,gid=1000,mode=0700
+    volumes:
+      - backend-secrets:/run/secrets/backend:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://0.0.0.0:3002/health/ready').then(response => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
+
+  postgres:
+    image: postgres:17.11-bookworm@sha256:84560e3b9c6874893fc4e2854f5dc3e7c1a37bc9d1dfd7a8c641310ae22ba5ad
+    depends_on:
+      runtime-bootstrap:
+        condition: service_completed_successfully
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: defy_db
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres/current/password
+      POSTGRES_USER: defy
+    networks:
+      - data
+    restart: unless-stopped
+    stop_grace_period: 30s
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - postgres-secrets:/run/secrets/postgres:ro
+      - ./backend/src/schemas/database.sql:/docker-entrypoint-initdb.d/001-database.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username defy --dbname defy_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  runtime-bootstrap:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.bootstrap
+    environment:
+      BACKEND_RUNTIME_GID: "1000"
+      BACKEND_SECRETS_ROOT: /runtime/backend
+      BOOTSTRAP_STATE_ROOT: /runtime/state
+      POSTGRES_SECRETS_ROOT: /runtime/postgres
+    network_mode: none
+    read_only: true
+    restart: "no"
+    stop_grace_period: 10s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,mode=0700
+    volumes:
+      - backend-secrets:/runtime/backend
+      - bootstrap-state:/runtime/state
+      - postgres-secrets:/runtime/postgres
+
+  admin-bootstrap:
+    build:
+      context: ./backend
+      target: runtime
+    command: ["node", "dist/scripts/adminBootstrap.js"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      runtime-bootstrap:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL_FILE: /run/secrets/backend/current/database-url
+      NODE_ENV: production
+    init: true
+    networks:
+      - data
+    read_only: true
+    restart: "no"
+    stop_grace_period: 10s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m,uid=1000,gid=1000,mode=0700
+    volumes:
+      - backend-secrets:/run/secrets/backend:ro
+
+networks:
+  app:
+  data:
+    internal: true
+
+volumes:
+  backend-secrets:
+  bootstrap-state:
+  postgres-data:
+  postgres-secrets:

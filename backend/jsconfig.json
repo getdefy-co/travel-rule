@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@controllers": ["./src/controllers"],
+      "@controllers/*": ["./src/controllers/*"],
+      "@database": ["./src/database"],
+      "@database/*": ["./src/database/*"],
+      "@libs": ["./src/libs"],
+      "@libs/*": ["./src/libs/*"],
+      "@requests": ["./src/requests"],
+      "@requests/*": ["./src/requests/*"],
+      "@routers": ["./src/routers"],
+      "@routers/*": ["./src/routers/*"],
+      "@json": ["./src/json"],
+      "@json/*": ["./src/json/*"]
+    }
+  },
+  "include": ["./src/**/*", "./"]
+}

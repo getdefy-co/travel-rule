@@ -1,0 +1,86 @@
+{
+  "api": {
+    "managedUserListFailed": "Could not load users.",
+    "userMutationFailed": "Could not update the user.",
+    "inquiryListFailed": "Could not load the inquiry queue.",
+    "inquiryDetailFailed": "Could not load inquiry details.",
+    "inquiryDecisionFailed": "Could not save the inquiry decision.",
+    "loginFailed": "Login failed",
+    "fetchUser": "Failed to fetch user information",
+    "sendResetLink": "Failed to send reset link",
+    "resetPassword": "Failed to reset password",
+    "changePassword": "Failed to change password",
+    "fetchTrpInquiries": "Failed to load TRP inquiries",
+    "fetchTrpInquiry": "Failed to load the TRP inquiry",
+    "decideTrpInquiry": "Failed to submit the inquiry decision",
+    "fetchManagedUsers": "Failed to load managed users",
+    "createManagedUser": "Failed to create managed user",
+    "editManagedUser": "Failed to edit managed user",
+    "activateManagedUser": "Failed to activate managed user",
+    "deactivateManagedUser": "Failed to deactivate managed user",
+    "fetchTrpAnalytics": "Could not load Travel Rule analytics.",
+    "fetchTrpManagementResources": "Could not load Travel Rule resources.",
+    "fetchTrpManagementResource": "Could not load the Travel Rule resource.",
+    "createTrpTravelAddress": "Could not create the Travel Address.",
+    "createTrpTransfer": "Could not create the transfer.",
+    "confirmTrpTransfer": "Could not update the transfer.",
+    "retryTrpTransfer": "Could not retry delivery.",
+    "fetchServiceApiKey": "Could not load service API key configuration.",
+    "revealServiceApiKey": "Could not reveal the service API key.",
+    "rotateServiceApiKey": "Could not rotate the service API key.",
+    "fetchRuntimeConfiguration": "Could not load runtime configuration.",
+    "fetchApiClients": "Could not load API clients.",
+    "createApiClient": "Could not create the API client.",
+    "rotateApiClientCredential": "Could not rotate the API client credential.",
+    "revokeApiClientCredential": "Could not revoke the API client credential.",
+    "fetchComplianceCases": "Could not load compliance cases.",
+    "fetchComplianceCase": "Could not load the compliance case.",
+    "decideComplianceCase": "Could not save the compliance decision.",
+    "fetchTravelRuleEmails": "Could not load email deliveries.",
+    "createTravelRuleEmail": "Could not create the email invitation.",
+    "retryTravelRuleEmail": "Could not retry the email delivery.",
+    "consumeTravelRuleEmail": "Link unavailable."
+  },
+  "compliance": {
+    "invalidCaseList": "Invalid compliance case list response",
+    "invalidCase": "Invalid compliance case response",
+    "invalidCaseDecision": "Invalid compliance decision response"
+  },
+  "auth": {
+    "noToken": "No token received from login response",
+    "invalidUser": "Invalid user information",
+    "useAuthContext": "useAuth must be used within an AuthProvider"
+  },
+  "trp": {
+    "invalidListResponse": "Invalid inquiry list response",
+    "invalidDetailResponse": "Invalid inquiry detail response",
+    "invalidDecisionResponse": "Invalid inquiry decision response",
+    "invalidAnalyticsResponse": "Invalid analytics response",
+    "invalidManagementResource": "Invalid management resource",
+    "invalidManagementListResponse": "Invalid management resource response",
+    "invalidManagementDetailResponse": "Invalid management resource detail response",
+    "invalidTravelAddressResponse": "Invalid Travel Address response",
+    "invalidTransferMutationResponse": "Invalid transfer mutation response",
+    "invalidConfigurationResponse": "Invalid configuration response",
+    "invalidEmailJobResponse": "Invalid email delivery response",
+    "invalidEmailAccessResponse": "Invalid email access response"
+  },
+  "users": {
+    "invalidListResponse": "Invalid managed user list response",
+    "invalidMutationResponse": "Invalid managed user mutation response",
+    "invalidRole": "Invalid managed user role"
+  },
+  "updates": {
+    "invalid": "Check your email address and try again.",
+    "rateLimited": "Too many requests. Please try again in 15 minutes.",
+    "timeout": "The request timed out. Please try again.",
+    "connection": "Could not connect. Check your connection and try again.",
+    "failed": "We could not send your request. Please try again later."
+  },
+  "configuration": {
+    "invalidRuntimeResponse": "Invalid runtime configuration response",
+    "invalidApiClientListResponse": "Invalid API client list response",
+    "invalidApiClientResponse": "Invalid API client response",
+    "invalidApiClientCredentialResponse": "Invalid API client credential response"
+  }
+}

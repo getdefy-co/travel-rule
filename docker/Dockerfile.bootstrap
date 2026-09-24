@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:1.7
+
+FROM node:24.19.0-bookworm-slim@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03
+
+RUN apt-get update \
+  && apt-get install --yes --no-install-recommends ca-certificates openssl \
+  && rm -rf /var/lib/apt/lists/*
+COPY runtime-bootstrap.sh /usr/local/bin/runtime-bootstrap
+RUN chmod 0555 /usr/local/bin/runtime-bootstrap
+ENTRYPOINT ["/usr/local/bin/runtime-bootstrap"]

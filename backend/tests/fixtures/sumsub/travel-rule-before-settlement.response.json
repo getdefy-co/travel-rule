@@ -1,0 +1,8 @@
+{
+  "data": {
+    "id": "sumsub-sandbox-transaction-id",
+    "travelRuleInfo": {
+      "status": "awaitingCounterparty"
+    }
+  }
+}

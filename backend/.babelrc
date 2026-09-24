@@ -1,0 +1,19 @@
+{
+  "presets": ["@babel/preset-env"],
+  "plugins": [
+    ["@babel/transform-runtime"],
+    [
+      "module-resolver",
+      {
+        "alias": {
+          "@json": "./src/json",
+          "@libs": "./src/libs",
+          "@routers": "./src/routers",
+          "@requests": "./src/requests",
+          "@database": "./src/database",
+          "@controllers": "./src/controllers"
+        }
+      }
+    ]
+  ]
+}
